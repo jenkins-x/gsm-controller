@@ -24,27 +24,27 @@ import (
 )
 
 type watchOptions struct {
-	kubeclient kubernetes.Interface
-	projectID  string
-
-	smClient *secretmanager.Client
-	ctx      context.Context
+	kubeclient    kubernetes.Interface
+	projectID     string
+	accessSecrets accessSecrets
 }
 
 func WatchSecrets(projectID string) error {
 
-	opts := watchOptions{
-		projectID: projectID,
-	}
-
 	var err error
+	opts := New(projectID)
 
 	// Create the google secrets manager client.
-	opts.ctx = context.Background()
-	opts.smClient, err = secretmanager.NewClient(opts.ctx)
+	gsm := googleSecretsManagerWrapper{
+		ctx: context.Background(),
+	}
+
+	gsm.smClient, err = secretmanager.NewClient(gsm.ctx)
 	if err != nil {
 		return errors.Wrap(err, "failed to setup secrets manager client")
 	}
+
+	opts.accessSecrets = gsm
 
 	f := shared.NewFactory()
 	config, err := f.CreateKubeConfig()
@@ -83,14 +83,8 @@ func WatchSecrets(projectID string) error {
 func (opts watchOptions) onAdd(obj interface{}) {
 	// Cast the obj as node
 	secret := obj.(*v1.Secret)
-	err := opts.populateSecret(secret, opts.projectID)
-	if err != nil {
-		klog.Error(err)
-	}
-	_, err = opts.kubeclient.CoreV1().Secrets(secret.Namespace).Update(secret)
-	if err != nil {
-		klog.Error(err)
-	}
+	derefrencedSecret := *secret
+	opts.findSecretData(derefrencedSecret)
 }
 
 func (opts watchOptions) onUpdate(oldObj interface{}, newObj interface{}) {
@@ -98,13 +92,21 @@ func (opts watchOptions) onUpdate(oldObj interface{}, newObj interface{}) {
 	newSecret := newObj.(*v1.Secret)
 	oldSecret := oldObj.(*v1.Secret)
 	if oldSecret.Annotations[annotationGSMsecretID] == "" && newSecret.Annotations[annotationGSMsecretID] != "" {
-		err := opts.populateSecret(newSecret, opts.projectID)
+		derefrencedSecret := *newSecret
+		opts.findSecretData(derefrencedSecret)
+	}
+}
+
+func (opts watchOptions) findSecretData(secret v1.Secret) {
+	secret, update, err := opts.populateSecret(secret, opts.projectID)
+	if err != nil {
+		klog.Error(err)
+	}
+	if update {
+		_, err = opts.kubeclient.CoreV1().Secrets(secret.Namespace).Update(&secret)
 		if err != nil {
 			klog.Error(err)
 		}
-		_, err = opts.kubeclient.CoreV1().Secrets(newSecret.Namespace).Update(newSecret)
-		if err != nil {
-			klog.Error(err)
-		}
+		klog.Infof("updated secret %s", secret.Name)
 	}
 }
