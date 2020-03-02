@@ -1,7 +1,9 @@
 package pkg
 
 import (
-	"fmt"
+	"context"
+
+	secretmanager "cloud.google.com/go/secretmanager/apiv1beta1"
 
 	"k8s.io/klog"
 
@@ -21,20 +23,33 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 )
 
-type secretOptions struct {
-	kubeclient kubernetes.Interface
-	projectID  string
+type watchOptions struct {
+	kubeclient    kubernetes.Interface
+	projectID     string
+	accessSecrets accessSecrets
 }
 
-func Foo(projectID string) error {
+func WatchSecrets(projectID string) error {
+
+	var err error
+	opts := New(projectID)
+
+	// Create the google secrets manager client.
+	gsm := googleSecretsManagerWrapper{
+		ctx: context.Background(),
+	}
+
+	gsm.smClient, err = secretmanager.NewClient(gsm.ctx)
+	if err != nil {
+		return errors.Wrap(err, "failed to setup secrets manager client")
+	}
+
+	opts.accessSecrets = gsm
 
 	f := shared.NewFactory()
 	config, err := f.CreateKubeConfig()
 	if err != nil {
 		return errors.Wrap(err, "failed to get kubernetes config")
-	}
-	opts := secretOptions{
-		projectID: projectID,
 	}
 
 	opts.kubeclient, err = kubernetes.NewForConfig(config)
@@ -65,32 +80,33 @@ func Foo(projectID string) error {
 	return nil
 }
 
-func (opts secretOptions) onAdd(obj interface{}) {
+func (opts watchOptions) onAdd(obj interface{}) {
 	// Cast the obj as node
 	secret := obj.(*v1.Secret)
-	err := PopulateSecret(secret, opts.projectID)
-	if err != nil {
-		klog.Error(err)
-	}
-	_, err = opts.kubeclient.CoreV1().Secrets(secret.Namespace).Update(secret)
-	if err != nil {
-		klog.Error(err)
-	}
+	derefrencedSecret := *secret
+	opts.findSecretData(derefrencedSecret)
 }
 
-func (opts secretOptions) onUpdate(oldObj interface{}, newObj interface{}) {
+func (opts watchOptions) onUpdate(oldObj interface{}, newObj interface{}) {
 	// only get the secret data from google manager store if the update even was because our annotation was added
 	newSecret := newObj.(*v1.Secret)
 	oldSecret := oldObj.(*v1.Secret)
 	if oldSecret.Annotations[annotationGSMsecretID] == "" && newSecret.Annotations[annotationGSMsecretID] != "" {
-		fmt.Println(newSecret.Name)
-		err := PopulateSecret(newSecret, opts.projectID)
+		derefrencedSecret := *newSecret
+		opts.findSecretData(derefrencedSecret)
+	}
+}
+
+func (opts watchOptions) findSecretData(secret v1.Secret) {
+	secret, update, err := opts.populateSecret(secret, opts.projectID)
+	if err != nil {
+		klog.Error(err)
+	}
+	if update {
+		_, err = opts.kubeclient.CoreV1().Secrets(secret.Namespace).Update(&secret)
 		if err != nil {
 			klog.Error(err)
 		}
-		_, err = opts.kubeclient.CoreV1().Secrets(newSecret.Namespace).Update(newSecret)
-		if err != nil {
-			klog.Error(err)
-		}
+		klog.Infof("updated secret %s", secret.Name)
 	}
 }
