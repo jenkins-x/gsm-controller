@@ -32,3 +32,5 @@ require (
 replace github.com/coreos/go-systemd => github.com/coreos/go-systemd/v22 v22.0.0
 
 replace github.com/russross/blackfriday => github.com/russross/blackfriday v1.5.2
+
+replace github.com/googleapis/gnostic => github.com/googleapis/gnostic v0.4.0
