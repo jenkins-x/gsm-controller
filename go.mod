@@ -18,7 +18,7 @@ require (
 	github.com/onsi/gomega v1.7.0 // indirect
 	github.com/peterbourgon/diskv v2.0.1+incompatible // indirect
 	github.com/pkg/errors v0.9.1
-	github.com/spf13/cobra v0.0.5
+	github.com/spf13/cobra v0.0.6
 	github.com/spf13/viper v1.6.2
 	github.com/stretchr/testify v1.4.0
 	google.golang.org/genproto v0.0.0-20200212174721-66ed5ce911ce
@@ -29,6 +29,8 @@ require (
 	k8s.io/klog v1.0.0
 	k8s.io/utils v0.0.0-20200229041039-0a110f9eb7ab // indirect
 )
+
+replace golang.org/x/sys => golang.org/x/sys v0.0.0-20190826190057-c7b8b68b1456
 
 replace github.com/coreos/go-systemd => github.com/coreos/go-systemd/v22 v22.0.0
 
