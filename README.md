@@ -17,13 +17,15 @@ secret and copy the value into the Kubernetes secret and save it in the cluster.
 # Setup
 
 _Note_ in this example we are creating secrets and running the Kubernetes cluster in the same Google Cloud Project, the same
-approach will work if Secrets Manager is enabled in a different project to store your secrets.
+approach will work if Secrets Manager is enabled in a different project to store your secrets, just set the env var `SECRETS_MANAGER_PROJECT_ID`
+below to a different GCP project id.
 
 Set some environment variables:
 ```bash
 export NAMESPACE=foo
 export CLUSTER_NAME=test-cluster-foo
 export PROJECT_ID=my-cool-project
+export SECRETS_MANAGER_PROJECT_ID=my-cool-project # change if you want you secrets stored in Secrets Manager from another GCP project
 ```
 
 First enable Google Secrets Manager
@@ -51,20 +53,20 @@ requires a GCP service account with a role to access the secrets in a given GCP 
 ### Setup
 ```bash
 kubectl create serviceaccount gsm-sa -n $NAMESPACE
-kubectl annotate sa gsm-sa iam.gke.io/gcp-service-account=$CLUSTER_NAME-sm@$PROJECT_ID.iam.gserviceaccount.com
+kubectl annotate sa gsm-sa iam.gke.io/gcp-service-account=$CLUSTER_NAME-sm@$SECRETS_MANAGER_PROJECT_ID.iam.gserviceaccount.com
 
-gcloud iam service-accounts create $CLUSTER_NAME-sm --project $PROJECT_ID
+gcloud iam service-accounts create $CLUSTER_NAME-sm --project $SECRETS_MANAGER_PROJECT_ID
 
 gcloud iam service-accounts add-iam-policy-binding \
   --role roles/iam.workloadIdentityUser \
   --member "serviceAccount:$PROJECT_ID.svc.id.goog[$NAMESPACE/gsm-sa]" \
-  $CLUSTER_NAME-sm@$PROJECT_ID.iam.gserviceaccount.com \
-  --project $PROJECT_ID
+  $CLUSTER_NAME-sm@$SECRETS_MANAGER_PROJECT_ID.iam.gserviceaccount.com \
+  --project $SECRETS_MANAGER_PROJECT_ID
 
-gcloud projects add-iam-policy-binding $PROJECT_ID \
+gcloud projects add-iam-policy-binding $SECRETS_MANAGER_PROJECT_ID \
   --role roles/secretmanager.secretAccessor \
-  --member "serviceAccount:$CLUSTER_NAME-sm@$PROJECT_ID.iam.gserviceaccount.com" \
-  --project $PROJECT_ID
+  --member "serviceAccount:$CLUSTER_NAME-sm@$SECRETS_MANAGER_PROJECT_ID.iam.gserviceaccount.com" \
+  --project $SECRETS_MANAGER_PROJECT_ID
 ```
 
 It can take a little while for permissions to propagate when using workload identity so it's a good idea to validate

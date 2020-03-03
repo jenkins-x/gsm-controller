@@ -1,1 +1,9 @@
 buildPack: go-cli
+pipelineConfig:
+  pipelines:
+    release:
+      build:
+        steps:
+        - name: release-chart
+          command: make release
+          image: gcr.io/jenkinsxio-labs/helm:0.0.1
