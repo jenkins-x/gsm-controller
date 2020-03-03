@@ -30,7 +30,7 @@ pipelineConfig:
 
               - name: upload-binaries
                 command: make goreleaser
-                image: gcr.io/jenkinsxio-labs/jxl:0.0.43
+                image: rawlingsj80/goreleaser:wip1
 
               - name: release-chart
                 command: make release
