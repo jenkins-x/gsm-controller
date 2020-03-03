@@ -13,7 +13,7 @@ pipelineConfig:
                   secret:
                     secretName: charts-secret
                     items:
-                      - key: credentials
+                      - key: credentials.json
                         path: charts/credentials.json
               containerOptions:
                 volumeMounts:
