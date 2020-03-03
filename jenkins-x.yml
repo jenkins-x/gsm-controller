@@ -24,12 +24,12 @@ pipelineConfig:
                 command: make release
                 image: golang:1.12
 
-              - name: upload-binaries
-                command: make goreleaser
+              - name: changelog
+                command: jx step changelog --verbose --header-file=hack/changelog-header.md --version=$VERSION --rev=$PULL_BASE_SHA --output-markdown=changelog.md --update-release=false
                 image: gcr.io/jenkinsxio/jx
 
-              - name: changelog
-                command: make changelog
+              - name: upload-binaries
+                command: make goreleaser
                 image: gcr.io/jenkinsxio-labs/jxl:0.0.43
 
               - name: release-chart
