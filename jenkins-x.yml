@@ -22,11 +22,15 @@ pipelineConfig:
             steps:
               - name: release-binary
                 command: make release
-                image: rawlingsj80/builder-go:wip5
+                image: golang:1.14.0
+
+              - name: upload-binaries
+                command: make goreleaser
+                image: gcr.io/jenkinsxio-labs/jxl:0.0.43
 
               - name: release-chart
                 command: make release
-                image: gcr.io/jenkinsxio-labs/helm:0.0.1
+                image: gcr.io/jenkinsxio-labs/helm:0.0.2
                 dir: /workspace/source/charts/gsm-controller
                 env:
                   - name: GOOGLE_APPLICATION_CREDENTIALS
