@@ -26,6 +26,10 @@ pipelineConfig:
 
               - name: upload-binaries
                 command: make goreleaser
+                image: gcr.io/jenkinsxio/jx
+
+              - name: changelog
+                command: make changelog
                 image: gcr.io/jenkinsxio-labs/jxl:0.0.43
 
               - name: release-chart
