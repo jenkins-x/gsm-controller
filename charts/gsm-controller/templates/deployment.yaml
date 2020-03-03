@@ -29,6 +29,10 @@ spec:
       - name: {{ .Chart.Name }}
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
+        command:
+        - gsm-controller
+        args:
+        - "{{ .Values.projectID }}"
         env:
 {{- range $pkey, $pval := .Values.env }}
         - name: {{ $pkey }}

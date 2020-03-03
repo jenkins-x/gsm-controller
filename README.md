@@ -19,21 +19,27 @@ secret and copy the value into the Kubernetes secret and save it in the cluster.
 _Note_ in this example we are creating secrets and running the Kubernetes cluster in the same Google Cloud Project, the same
 approach will work if Secrets Manager is enabled in a different project to store your secrets.
 
+Set some environment variables:
+```bash
+export NAMESPACE=foo
+export CLUSTER_NAME=test-cluster-foo
+export PROJECT_ID=my-cool-project
+```
 
 First enable Google Secrets Manager
 
 ```bash
-gcloud services enable secretmanager.googleapis.com
+gcloud services enable secretmanager.googleapis.com --project $PROJECT_ID
 ```
 
 Create a secret
 - Using a file:
 ```bash
-gcloud beta secrets create foo --replication-policy automatic --project my-cool-project --data-file=-=my_secrets.yaml
+gcloud beta secrets create foo --replication-policy automatic --project $PROJECT_ID --data-file=-=my_secrets.yaml
 ```
 - or for a single key=value secret:
 ```bash
-echo -n bar | gcloud beta secrets create foo --replication-policy automatic --project my-cool-project --data-file=-
+echo -n bar | gcloud beta secrets create foo --replication-policy automatic --project $PROJECT_ID --data-file=-
 ```
 
 
@@ -42,28 +48,23 @@ echo -n bar | gcloud beta secrets create foo --replication-policy automatic --pr
 So that `gsm-controller` can access secrets in Google Secrets Manager so it can populate Kubernetes secrets in a namespace, it
 requires a GCP service account with a role to access the secrets in a given GCP project.
 
-Set some environment variables:
-```bash
-export NAMESPACE=jx
-export CLUSTER_NAME=test-cluster-foo
-export PROJECT_ID=jx-development
-```
-
 ### Setup
 ```bash
-kubectl create serviceaccount gsm-sa
-kubectl annotate sa gsm-sa jenkins-x.io/gsm-secret-id='foo'
+kubectl create serviceaccount gsm-sa -n $NAMESPACE
+kubectl annotate sa gsm-sa iam.gke.io/gcp-service-account=$CLUSTER_NAME-ex@$PROJECT_ID.iam.gserviceaccount.com
 
-gcloud iam service-accounts create $CLUSTER_NAME-sm
+gcloud iam service-accounts create $CLUSTER_NAME-sm --project $PROJECT_ID
 
 gcloud iam service-accounts add-iam-policy-binding \
   --role roles/iam.workloadIdentityUser \
   --member "serviceAccount:$PROJECT_ID.svc.id.goog[$NAMESPACE/gsm-sa]" \
-  $CLUSTER_NAME-sm@$PROJECT_ID.iam.gserviceaccount.com
+  $CLUSTER_NAME-sm@$PROJECT_ID.iam.gserviceaccount.com \
+  --project $PROJECT_ID
 
 gcloud projects add-iam-policy-binding $PROJECT_ID \
   --role roles/secretmanager.secretAccessor \
-  --member "serviceAccount:$CLUSTER_NAME-sm@$PROJECT_ID.iam.gserviceaccount.com"
+  --member "serviceAccount:$CLUSTER_NAME-sm@$PROJECT_ID.iam.gserviceaccount.com" \
+  --project $PROJECT_ID
 ```
 
 It can take a little while for permissions to propagate when using workload identity so it's a good idea to validate
@@ -87,8 +88,7 @@ gcloud auth list
 install the gsm controller chart
 ```bash
 helm install gsm-controller \
-  --set boot.namespace=$NAMESPACE \
-  --set boot.projectID=$PROJECT_ID \
+  --set projectID=$PROJECT_ID \
   .
 ```
 
