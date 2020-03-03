@@ -125,7 +125,7 @@ darwin: ## Build for OSX
 	chmod +x build/darwin/$(NAME)
 
 .PHONY: release
-release: clean build test linux win darwin
+release: clean test
 
 .PHONY: changelog
 changelog:
