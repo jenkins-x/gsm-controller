@@ -51,7 +51,7 @@ requires a GCP service account with a role to access the secrets in a given GCP 
 ### Setup
 ```bash
 kubectl create serviceaccount gsm-sa -n $NAMESPACE
-kubectl annotate sa gsm-sa iam.gke.io/gcp-service-account=$CLUSTER_NAME-ex@$PROJECT_ID.iam.gserviceaccount.com
+kubectl annotate sa gsm-sa iam.gke.io/gcp-service-account=$CLUSTER_NAME-sm@$PROJECT_ID.iam.gserviceaccount.com
 
 gcloud iam service-accounts create $CLUSTER_NAME-sm --project $PROJECT_ID
 
@@ -87,8 +87,12 @@ gcloud auth list
 
 install the gsm controller chart
 ```bash
+cd charts/gsm-controller
+make build
 helm install gsm-controller \
   --set projectID=$PROJECT_ID \
+  --set image.repository=gcr.io/cbjx-runnerregal/gsm-controller \
+  --set image.tag=0.0.3 \
   .
 ```
 
