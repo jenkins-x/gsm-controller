@@ -27,7 +27,7 @@ pipelineConfig:
               - name: release-chart
                 command: make release
                 image: gcr.io/jenkinsxio-labs/helm:0.0.1
-                dir: /workspace/charts/gsm-controller
+                dir: /workspace/source/charts/gsm-controller
                 env:
                   - name: GOOGLE_APPLICATION_CREDENTIALS
                     value: /secrets/charts/credentials.json
