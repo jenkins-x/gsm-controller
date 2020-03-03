@@ -16,7 +16,7 @@ secret and copy teh value into the Kubernetes secret and save it in the cluster.
 
 # Setup
 
-First create a secret in Google Storage Manager
+First create a secret in Google Secrets Manager
 
 Using a file:
 ```bash
@@ -30,7 +30,7 @@ echo bar | gcloud beta secrets create foo --replication-policy automatic --proje
 
 ## Access
 
-So that `gsm-controller` can access the secrets in Google Secrets Manager that it needs to populate a namespace, it
+So that `gsm-controller` can access secrets in Google Secrets Manager so it can populate Kubernetes secrets in a namespace, it
 requires a GCP service account with a role to access the secrets in a given GCP project.
 
 Set some environment variables:
@@ -83,10 +83,11 @@ helm install gsm-controller \
 ```
 ### Run locally
 
+Create a GCP secret in the project your secrets are stored, assign the accessor role, download the key.json and...
 ```bash
 export GOOGLE_APPLICATION_CREDENTIALS=/path/credentials.json
 make build
-
+./build/gsm-controller my-cool-project
 ```
 
 
