@@ -26,7 +26,8 @@ release: clean
 	helm dependency build
 	helm lint
 	helm package .
-	curl --fail -u $(CHARTMUSEUM_CREDS_USR):$(CHARTMUSEUM_CREDS_PSW) --data-binary "@$(NAME)-$(shell sed -n 's/^version: //p' Chart.yaml).tgz" $(CHART_REPO)/api/charts
+	helm repo add jx-labs gs://jenkinsxio-labs/
+	helm gcs push ${NAME}*.tgz% jx-labs
 	rm -rf ${NAME}*.tgz%
 
 tag:

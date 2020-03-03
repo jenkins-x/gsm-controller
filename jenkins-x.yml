@@ -2,8 +2,32 @@ buildPack: go-cli
 pipelineConfig:
   pipelines:
     release:
-      build:
-        steps:
-        - name: release-chart
-          command: make release
-          image: gcr.io/jenkinsxio-labs/helm:0.0.1
+      pipeline:
+        stages:
+          - agent:
+              image: gcr.io/jenkinsxio/builder-go
+            name: chart
+            options:
+              volumes:
+                - name: charts-secret
+                  secret:
+                    secretName: charts-secret
+                    items:
+                      - key: credentials
+                        path: charts/credentials.json
+              containerOptions:
+                volumeMounts:
+                  - name: charts-secret
+                    mountPath: /secrets
+            steps:
+              - name: release-binary
+                command: make release
+                image: rawlingsj80/builder-go:wip5
+
+              - name: release-chart
+                command: make release
+                image: gcr.io/jenkinsxio-labs/helm:0.0.1
+                dir: /workspace/charts/gsm-controller
+                env:
+                  - name: GOOGLE_APPLICATION_CREDENTIALS
+                    value: /secrets/charts/credentials.json
