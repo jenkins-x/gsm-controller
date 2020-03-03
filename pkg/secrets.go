@@ -71,7 +71,7 @@ func (o googleSecretsManagerWrapper) getGoogleSecretManagerSecret(secretID, proj
 	// Retrieve the secret
 	result, err := o.smClient.AccessSecretVersion(o.ctx, accessRequest)
 	if err != nil {
-		return nil, fmt.Errorf("failed to access secret with id %s", secretID)
+		return nil, fmt.Errorf("failed to access secret with name %s, err: %v", name, err)
 	}
 
 	return result.Payload.Data, nil
