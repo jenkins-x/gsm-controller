@@ -30,8 +30,6 @@ require (
 	k8s.io/utils v0.0.0-20200229041039-0a110f9eb7ab // indirect
 )
 
-replace golang.org/x/sys => golang.org/x/sys v0.0.0-20190826190057-c7b8b68b1456
-
 replace github.com/coreos/go-systemd => github.com/coreos/go-systemd/v22 v22.0.0
 
 replace github.com/russross/blackfriday => github.com/russross/blackfriday v1.5.2
