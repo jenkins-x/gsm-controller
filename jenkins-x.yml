@@ -22,7 +22,7 @@ pipelineConfig:
             steps:
               - name: release-binary
                 command: make release
-                image: golang:1.14.0
+                image: golang:1.13
 
               - name: upload-binaries
                 command: make goreleaser
