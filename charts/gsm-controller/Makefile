@@ -1,8 +1,5 @@
-CHART_REPO := http://jenkins-x-chartmuseum:8080
-CURRENT=$(pwd)
+CHART_REPO := gs://jenkinsxio-labs/charts
 NAME := gsm-controller
-OS := $(shell uname)
-VERSION := $(shell cat ../../VERSION)
 
 build: clean
 	rm -rf requirements.lock
@@ -23,26 +20,13 @@ clean:
 	rm -rf ${NAME}*.tgz
 
 release: clean
+	sed -i -e "s/version:.*/version: $(VERSION)/" Chart.yaml
+	sed -i -e "s|repository:.*|repository: $(DOCKER_REGISTRY)\/jenkinsxio-labs\/$(NAME)|" values.yaml
+	sed -i -e "s/tag:.*/tag: $(VERSION)/" values.yaml
+
 	helm dependency build
 	helm lint
 	helm package .
-	helm repo add jx-labs gs://jenkinsxio-labs/
-	helm gcs push ${NAME}*.tgz% jx-labs
+	helm repo add jx-labs $(CHART_REPO)
+	helm gcs push ${NAME}*.tgz jx-labs
 	rm -rf ${NAME}*.tgz%
-
-tag:
-ifeq ($(OS),Darwin)
-	sed -i "" -e "s/version:.*/version: $(VERSION)/" Chart.yaml
-	sed -i "" -e "s/tag:.*/tag: $(VERSION)/" values.yaml
-else ifeq ($(OS),Linux)
-	sed -i -e "s/version:.*/version: $(VERSION)/" Chart.yaml
-	sed -i -e "s|repository:.*|repository: $(DOCKER_REGISTRY)\/cbjx-runnerregal\/$(NAME)|" values.yaml
-	sed -i -e "s/tag:.*/tag: $(VERSION)/" values.yaml
-else
-	echo "platfrom $(OS) not supported to tag with"
-	exit -1
-endif
-	git add --all
-	git commit -m "release $(VERSION)" --allow-empty # if first release then no verion update is performed
-	git tag -fa v$(VERSION) -m "Release version $(VERSION)"
-	git push origin v$(VERSION)
