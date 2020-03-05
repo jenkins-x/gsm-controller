@@ -21,7 +21,7 @@ clean:
 
 release: clean
 	sed -i -e "s/version:.*/version: $(VERSION)/" Chart.yaml
-	sed -i -e "s|repository:.*|repository: $(DOCKER_REGISTRY)\/jenkinsxio-labs\/$(NAME)|" values.yaml
+	sed -i -e "s|repository:.*|repository: gcr.io\/jenkinsxio-labs\/$(NAME)|" values.yaml
 	sed -i -e "s/tag:.*/tag: $(VERSION)/" values.yaml
 
 	helm dependency build
