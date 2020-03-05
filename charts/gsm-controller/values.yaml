@@ -5,8 +5,8 @@ projectID:
 # Declare variables to be passed into your templates.
 replicaCount: 1
 image:
-  repository: draft
-  tag: dev
+  repository: gcr.io/cbjx-runnerregal/gsm-controller
+  tag: 0.0.27
   pullPolicy: IfNotPresent
 
 # define environment variables here as a map of key: value
