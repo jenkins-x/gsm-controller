@@ -14,19 +14,19 @@ pipelineConfig:
                     secretName: chart-sa
                     items:
                       - key: credentials.json
-                        path: charts/credentials.json
+                        path: credentials.json
                 - name: gcr-sa
                   secret:
                     secretName: gcr-sa
                     items:
                       - key: credentials.json
-                        path: gcr/credentials.json
+                        path: credentials.json
               containerOptions:
                 volumeMounts:
                   - name: chart-sa
-                    mountPath: /secrets
+                    mountPath: /secrets/charts
                   - name: gcr-sa
-                    mountPath: /secrets
+                    mountPath: /secrets/gcr
             steps:
               - name: release-binary
                 command: make release
