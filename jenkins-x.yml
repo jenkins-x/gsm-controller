@@ -34,7 +34,7 @@ pipelineConfig:
 
               - name: build-and-push-image
                 command: /kaniko/executor
-                image: gcr:io/kaniko-project/executor:9912ccbf8d22bbafbf971124600fbb0b13b9cbd6
+                image: gcr.io/kaniko-project/executor:9912ccbf8d22bbafbf971124600fbb0b13b9cbd6
                 args:
                   - --dockerfile=/workspace/source/Dockerfile
                   - --destination=gcr.io/jenkinsxio-labs/gsm-controller:${inputs.params.version}
@@ -53,7 +53,7 @@ pipelineConfig:
 
               - name: release-chart
                 command: make release
-                image: gcr.io/jenkinsxio-labs/helm:0.0.2
+                image: gcr.io/jenkinsxio-labs/helm:0.0.3
                 dir: /workspace/source/charts/gsm-controller
                 env:
                   - name: GOOGLE_APPLICATION_CREDENTIALS
