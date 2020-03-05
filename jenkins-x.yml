@@ -9,20 +9,38 @@ pipelineConfig:
             name: chart
             options:
               volumes:
-                - name: charts-secret
+                - name: chart-sa
                   secret:
-                    secretName: charts-secret
+                    secretName: chart-sa
                     items:
                       - key: credentials.json
                         path: charts/credentials.json
+                - name: gcr-sa
+                  secret:
+                    secretName: gcr-sa
+                    items:
+                      - key: credentials.json
+                        path: gcr/credentials.json
               containerOptions:
                 volumeMounts:
-                  - name: charts-secret
+                  - name: chart-sa
+                    mountPath: /secrets
+                  - name: gcr-sa
                     mountPath: /secrets
             steps:
               - name: release-binary
                 command: make release
                 image: golang:1.12
+
+              - name: build-and-push-image
+                command: /kaniko/executor
+                args:
+                  - --dockerfile=/workspace/source/Dockerfile
+                  - --destination=gcr.io/jenkinsxio-labs/gsm-controller:${inputs.params.version}
+                  - --context=/workspace/source
+                env:
+                  - name: GOOGLE_APPLICATION_CREDENTIALS
+                    value: /secrets/gcr/credentials.json
 
               - name: changelog
                 command: jx step changelog --verbose --header-file=hack/changelog-header.md --version=$VERSION --rev=$PULL_BASE_SHA --output-markdown=changelog.md --update-release=false
