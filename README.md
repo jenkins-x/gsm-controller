@@ -94,7 +94,7 @@ helm repo add jx-labs https://jenkinsxio-labs.storage.googleapis.com/charts
 # or
 helm repo update
 
-helm install --set projectID=$SECRETS_MANAGER_PROJECT_ID gsm-controller jx-labs/gsm-controller 
+helm install --set projectID=$SECRETS_MANAGER_PROJECT_ID gsm-controller jx-labs/gsm-controller
 
 ```
 
@@ -109,7 +109,7 @@ kubectl annotate secret my-secret jenkins-x.io/gsm-secret-id=foo
 ```  
 After a short wait you should be able to see the base64 encoded data in the secret
 ```bash
-kubectl get secret foo -oyaml
+kubectl get secret my-secret -oyaml
 ```
 
 If not check the logs of the controller
