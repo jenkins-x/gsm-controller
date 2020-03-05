@@ -28,5 +28,5 @@ release: clean
 	helm lint
 	helm package .
 	helm repo add jx-labs $(CHART_REPO)
-	helm gcs push ${NAME}*.tgz jx-labs
+	helm gcs push ${NAME}*.tgz jx-labs --public
 	rm -rf ${NAME}*.tgz%

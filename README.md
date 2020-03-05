@@ -31,17 +31,17 @@ export SECRETS_MANAGER_PROJECT_ID=my-cool-project # change if you want you secre
 First enable Google Secrets Manager
 
 ```bash
-gcloud services enable secretmanager.googleapis.com --project $PROJECT_ID
+gcloud services enable secretmanager.googleapis.com --project $SECRETS_MANAGER_PROJECT_ID
 ```
 
 Create a secret
 - Using a file:
 ```bash
-gcloud beta secrets create foo --replication-policy automatic --project $PROJECT_ID --data-file=-=my_secrets.yaml
+gcloud beta secrets create foo --replication-policy automatic --project $SECRETS_MANAGER_PROJECT_ID --data-file=-=my_secrets.yaml
 ```
 - or for a single key=value secret:
 ```bash
-echo -n bar | gcloud beta secrets create foo --replication-policy automatic --project $PROJECT_ID --data-file=-
+echo -n bar | gcloud beta secrets create foo --replication-policy automatic --project $SECRETS_MANAGER_PROJECT_ID --data-file=-
 ```
 
 
@@ -89,13 +89,13 @@ gcloud auth list
 
 install the gsm controller chart
 ```bash
-cd charts/gsm-controller
-make build
-helm install gsm-controller \
-  --set projectID=$PROJECT_ID \
-  --set image.repository=gcr.io/cbjx-runnerregal/gsm-controller \
-  --set image.tag=0.0.3 \
-  .
+helm plugin install https://github.com/hayorov/helm-gcs
+helm repo add jx-labs https://jenkinsxio-labs.storage.googleapis.com/charts
+# or
+helm repo update
+
+helm install --set projectID=$SECRETS_MANAGER_PROJECT_ID gsm-controller jx-labs/gsm-controller 
+
 ```
 
 ### Annotate secrets
@@ -104,6 +104,7 @@ with above.
 
 ```bash
 kubectl create secret generic my-secret
+kubectl annotate secret my-secret jenkins-x.io/gsm-kubernetes-secret-key=credentials.json
 kubectl annotate secret my-secret jenkins-x.io/gsm-secret-id=foo
 ```  
 After a short wait you should be able to see the base64 encoded data in the secret
