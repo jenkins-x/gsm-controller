@@ -1,14 +1,22 @@
 package shared
 
 import (
+	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 
 	"github.com/pkg/errors"
+	"k8s.io/client-go/tools/clientcmd/api"
 
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
+)
+
+const (
+	// PodNamespaceFile the file path and name for pod namespace
+	PodNamespaceFile = "/var/run/secrets/kubernetes.io/serviceaccount/namespace"
 )
 
 type factory struct {
@@ -89,4 +97,49 @@ func homeDir() string {
 		h = "."
 	}
 	return h
+}
+
+// CurrentContext returns the current context
+func CurrentContext(config *api.Config) *api.Context {
+	if config != nil {
+		name := config.CurrentContext
+		if name != "" && config.Contexts != nil {
+			return config.Contexts[name]
+		}
+	}
+	return nil
+}
+
+// CurrentNamespace returns the current namespace in the context
+func CurrentNamespace() string {
+	config, _, err := LoadConfig()
+	ctx := CurrentContext(config)
+	if ctx != nil {
+		n := ctx.Namespace
+		if n != "" {
+			return n
+		}
+	}
+	// if we are in a pod lets try load the pod namespace file
+	data, err := ioutil.ReadFile(PodNamespaceFile)
+	if err == nil {
+		n := string(data)
+		if n != "" {
+			return n
+		}
+	}
+	return "default"
+}
+
+// LoadConfig loads the Kubernetes configuration
+func LoadConfig() (*api.Config, *clientcmd.PathOptions, error) {
+	po := clientcmd.NewDefaultPathOptions()
+	if po == nil {
+		return nil, po, fmt.Errorf("Could not find any default path options for the kubeconfig file usually found at ~/.kube/config")
+	}
+	config, err := po.GetStartingConfig()
+	if err != nil {
+		return nil, po, fmt.Errorf("Could not load the kube config file %s due to %s", po.GetDefaultFilename(), err)
+	}
+	return config, po, err
 }

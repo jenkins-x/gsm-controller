@@ -57,7 +57,8 @@ func WatchSecrets(projectID string) error {
 		return errors.Wrap(err, "failed to create kubernetes clientset")
 	}
 
-	factory := informers.NewSharedInformerFactory(opts.kubeclient, 0)
+	namespace := shared.CurrentNamespace()
+	factory := informers.NewSharedInformerFactoryWithOptions(opts.kubeclient, 0, informers.WithNamespace(namespace))
 
 	informer := factory.Core().V1().Secrets().Informer()
 
