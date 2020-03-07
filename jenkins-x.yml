@@ -43,9 +43,10 @@ pipelineConfig:
                   - name: GOOGLE_APPLICATION_CREDENTIALS
                     value: /secrets/gcr/credentials.json
 
-              - name: changelog
-                command: jx step changelog --verbose --header-file=hack/changelog-header.md --version=$VERSION --rev=$PULL_BASE_SHA --output-markdown=changelog.md --update-release=false
-                image: gcr.io/jenkinsxio/jx
+              # lets avoid this at the moment because it generated a Releases resource which prevents the chart being installed on non jx clusters
+              #- name: changelog
+              #  command: jx step changelog --verbose --header-file=hack/changelog-header.md --version=$VERSION --rev=$PULL_BASE_SHA --output-markdown=changelog.md --update-release=false
+              #  image: gcr.io/jenkinsxio/jx
 
               - name: upload-binaries
                 command: make goreleaser
