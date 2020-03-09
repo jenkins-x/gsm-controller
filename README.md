@@ -138,6 +138,7 @@ make build
 ./build/gsm-controller my-cool-project
 ```
 
+# Video
 
-
+[![GSM Controller](http://img.youtube.com/vi/wLHgkhzeNe8/0.jpg)](http://www.youtube.com/watch?v=wLHgkhzeNe8 "Google Secrets Manager - Kubernetes Controller")
 
