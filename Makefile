@@ -110,6 +110,7 @@ install: $(GO_DEPENDENCIES) ## Install the binary
 	GOBIN=${GOPATH}/bin $(GO) install $(BUILDFLAGS) $(MAIN_SRC_FILE)
 
 linux: ## Build for Linux
+	go mod download
 	CGO_ENABLED=$(CGO_ENABLED) GOOS=linux GOARCH=amd64 $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/linux/$(NAME) $(MAIN_SRC_FILE)
 	chmod +x build/linux/$(NAME)
 
