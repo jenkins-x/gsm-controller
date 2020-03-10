@@ -134,6 +134,7 @@ changelog:
 
 .PHONY: goreleaser
 goreleaser:
+	git fetch origin refs/tags/v$(VERSION)
 	step-go-releaser --organisation=$(ORG) --revision=$(REV) --branch=$(BRANCH) --build-date=$(BUILD_DATE) --go-version=$(GO_VERSION) --root-package=$(ROOT_PACKAGE) --version=$(VERSION)
 
 .PHONY: clean
