@@ -1,21 +1,8 @@
 package main
 
-import (
-	"log"
-	"os"
+import "github.com/jenkins-x-labs/gsm-controller/cmd/root"
 
-	"github.com/jenkins-x-labs/gsm-controller/pkg"
-)
-
+// Entrypoint for the command
 func main() {
-	if len(os.Args) != 2 {
-		log.Fatal("no argument found for GCP project id")
-	}
-
-	err := pkg.WatchSecrets(os.Args[1])
-	if err != nil {
-		log.Fatal(err)
-		os.Exit(1)
-	}
-	os.Exit(0)
+	root.Execute()
 }

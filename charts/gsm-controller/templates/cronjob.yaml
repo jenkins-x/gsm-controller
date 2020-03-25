@@ -1,0 +1,27 @@
+{{- if .Values.cron.enabled }}
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: {{ template "fullname" . }}
+spec:
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: {{ .Chart.Name }}
+            image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+            imagePullPolicy: {{ .Values.image.pullPolicy }}
+            command:
+              - "gsm"
+            args:
+              - list
+              - --project-id
+              - "{{ .Values.projectID }}"
+          restartPolicy: Never
+          serviceAccountName: gsm-sa
+  schedule: "{{ .Values.cron.schedule }}"
+  successfulJobsHistoryLimit: 3
+  suspend: false
+{{- end -}}
