@@ -3,6 +3,8 @@ package pkg
 import (
 	"context"
 
+	"github.com/spf13/cobra"
+
 	secretmanager "cloud.google.com/go/secretmanager/apiv1beta1"
 
 	"k8s.io/klog"
@@ -23,10 +25,50 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 )
 
-func WatchSecrets(projectID string) error {
+// UpgradeOptions are the flags for delete commands
+type WatchOptions struct {
+	Cmd       *cobra.Command
+	Args      []string
+	projectID string
+}
+
+var (
+	watch_long = "Watch kubernetes secrets and update their data values from Google Secret Manager"
+
+	watch_example = "gsm watch --project-id my-cool-gcp-project"
+)
+
+// NewCmdWatch creates the command
+func NewCmdWatch() *cobra.Command {
+	options := &WatchOptions{}
+
+	cmd := &cobra.Command{
+		Use:     "watch",
+		Long:    watch_long,
+		Example: watch_example,
+		Run: func(cmd *cobra.Command, args []string) {
+			options.Cmd = cmd
+			options.Args = args
+			err := options.Run()
+			shared.CheckErr(err)
+		},
+		SuggestFor: []string{"watch"},
+	}
+
+	cmd.Flags().StringVarP(&options.projectID, "project-id", "", "", "The Google Project ID that contains the Google Secret Manager service")
+
+	return cmd
+}
+
+// Run implements this command
+func (o *WatchOptions) Run() error {
+
+	if o.projectID == "" {
+		return errors.New("missing flag project-id")
+	}
 
 	var err error
-	opts := New(projectID)
+	secretOptions := New(o.projectID)
 
 	// Create the google secrets manager client.
 	gsm := googleSecretsManagerWrapper{
@@ -38,7 +80,7 @@ func WatchSecrets(projectID string) error {
 		return errors.Wrap(err, "failed to setup secrets manager client")
 	}
 
-	opts.accessSecrets = gsm
+	secretOptions.accessSecrets = gsm
 
 	f := shared.NewFactory()
 	config, err := f.CreateKubeConfig()
@@ -46,13 +88,13 @@ func WatchSecrets(projectID string) error {
 		return errors.Wrap(err, "failed to get kubernetes config")
 	}
 
-	opts.kubeclient, err = kubernetes.NewForConfig(config)
+	secretOptions.kubeclient, err = kubernetes.NewForConfig(config)
 	if err != nil {
 		return errors.Wrap(err, "failed to create kubernetes clientset")
 	}
 
 	namespace := shared.CurrentNamespace()
-	factory := informers.NewSharedInformerFactoryWithOptions(opts.kubeclient, 0, informers.WithNamespace(namespace))
+	factory := informers.NewSharedInformerFactoryWithOptions(secretOptions.kubeclient, 0, informers.WithNamespace(namespace))
 
 	informer := factory.Core().V1().Secrets().Informer()
 
@@ -62,8 +104,8 @@ func WatchSecrets(projectID string) error {
 	defer runtime.HandleCrash()
 
 	informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
-		AddFunc:    opts.onAdd,
-		UpdateFunc: opts.onUpdate,
+		AddFunc:    secretOptions.onAdd,
+		UpdateFunc: secretOptions.onUpdate,
 	})
 
 	go informer.Run(stopper)

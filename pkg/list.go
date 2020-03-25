@@ -3,6 +3,8 @@ package pkg
 import (
 	"context"
 
+	"github.com/spf13/cobra"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	secretmanager "cloud.google.com/go/secretmanager/apiv1beta1"
@@ -17,10 +19,49 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 )
 
-func ListSecrets(projectID string) error {
+// ListOptions are the flags for list commands
+type ListOptions struct {
+	Cmd       *cobra.Command
+	Args      []string
+	projectID string
+}
+
+var (
+	list_long = "List kubernetes secrets and update their data values from Google Secret Manager"
+
+	list_example = "gsm list --project-id my-cool-gcp-project"
+)
+
+// NewCmdList creates the command
+func NewCmdList() *cobra.Command {
+	options := &ListOptions{}
+
+	cmd := &cobra.Command{
+		Use:     "list",
+		Long:    list_long,
+		Example: list_example,
+		Run: func(cmd *cobra.Command, args []string) {
+			options.Cmd = cmd
+			options.Args = args
+			err := options.Run()
+			shared.CheckErr(err)
+		},
+		SuggestFor: []string{"watch"},
+	}
+
+	cmd.Flags().StringVarP(&options.projectID, "project-id", "", "", "The Google Project ID that contains the Google Secret Manager service")
+
+	return cmd
+}
+
+func (o ListOptions) Run() error {
+
+	if o.projectID == "" {
+		return errors.New("missing flag project-id")
+	}
 
 	var err error
-	opts := New(projectID)
+	secretOptions := New(o.projectID)
 
 	// Create the google secrets manager client.
 	gsm := googleSecretsManagerWrapper{
@@ -32,7 +73,7 @@ func ListSecrets(projectID string) error {
 		return errors.Wrap(err, "failed to setup secrets manager client")
 	}
 
-	opts.accessSecrets = gsm
+	secretOptions.accessSecrets = gsm
 
 	f := shared.NewFactory()
 	config, err := f.CreateKubeConfig()
@@ -40,20 +81,20 @@ func ListSecrets(projectID string) error {
 		return errors.Wrap(err, "failed to get kubernetes config")
 	}
 
-	opts.kubeclient, err = kubernetes.NewForConfig(config)
+	secretOptions.kubeclient, err = kubernetes.NewForConfig(config)
 	if err != nil {
 		return errors.Wrap(err, "failed to create kubernetes clientset")
 	}
 
 	namespace := shared.CurrentNamespace()
 
-	secretsList, err := opts.kubeclient.CoreV1().Secrets(namespace).List(metav1.ListOptions{})
+	secretsList, err := secretOptions.kubeclient.CoreV1().Secrets(namespace).List(metav1.ListOptions{})
 	if err != nil {
 		return errors.Wrapf(err, "failed to list secrets in namespace %s", namespace)
 	}
 
 	for _, secret := range secretsList.Items {
-		err := opts.findSecretData(secret)
+		err := secretOptions.findSecretData(secret)
 		if err != nil {
 			return errors.Wrapf(err, "failed to populate secret %s", secret.Name)
 		}
