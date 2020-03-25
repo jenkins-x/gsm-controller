@@ -23,12 +23,6 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 )
 
-type watchOptions struct {
-	kubeclient    kubernetes.Interface
-	projectID     string
-	accessSecrets accessSecrets
-}
-
 func WatchSecrets(projectID string) error {
 
 	var err error
@@ -81,33 +75,40 @@ func WatchSecrets(projectID string) error {
 	return nil
 }
 
-func (opts watchOptions) onAdd(obj interface{}) {
+func (opts secretOptions) onAdd(obj interface{}) {
 	// Cast the obj as node
 	secret := obj.(*v1.Secret)
 	derefrencedSecret := *secret
-	opts.findSecretData(derefrencedSecret)
+	err := opts.findSecretData(derefrencedSecret)
+	if err != nil {
+		klog.Error(err)
+	}
 }
 
-func (opts watchOptions) onUpdate(oldObj interface{}, newObj interface{}) {
+func (opts secretOptions) onUpdate(oldObj interface{}, newObj interface{}) {
 	// only get the secret data from google manager store if the update even was because our annotation was added
 	newSecret := newObj.(*v1.Secret)
 	oldSecret := oldObj.(*v1.Secret)
 	if oldSecret.Annotations[annotationGSMsecretID] == "" && newSecret.Annotations[annotationGSMsecretID] != "" {
 		derefrencedSecret := *newSecret
-		opts.findSecretData(derefrencedSecret)
+		err := opts.findSecretData(derefrencedSecret)
+		if err != nil {
+			klog.Error(err)
+		}
 	}
 }
 
-func (opts watchOptions) findSecretData(secret v1.Secret) {
+func (opts secretOptions) findSecretData(secret v1.Secret) error {
 	secret, update, err := opts.populateSecret(secret, opts.projectID)
 	if err != nil {
-		klog.Error(err)
+		return errors.Wrapf(err, "failed to populate secret %s from gsm in project %s", secret.Name, opts.projectID)
 	}
 	if update {
 		_, err = opts.kubeclient.CoreV1().Secrets(secret.Namespace).Update(&secret)
 		if err != nil {
-			klog.Error(err)
+			return errors.Wrapf(err, "failed to update secret %s", secret.Name)
 		}
 		klog.Infof("updated secret %s", secret.Name)
 	}
+	return nil
 }

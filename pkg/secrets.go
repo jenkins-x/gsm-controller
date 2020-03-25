@@ -8,7 +8,14 @@ import (
 
 	secretmanagerpb "google.golang.org/genproto/googleapis/cloud/secretmanager/v1beta1"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/client-go/kubernetes"
 )
+
+type secretOptions struct {
+	kubeclient    kubernetes.Interface
+	projectID     string
+	accessSecrets accessSecrets
+}
 
 const (
 	annotationGSMsecretID            = "jenkins-x.io/gsm-secret-id"
@@ -18,8 +25,8 @@ const (
 // New creates a instatialized Getter that can get files locally or remotely.
 // useRemoteFS tells us if the service is configured to use the remote file system.
 // accessKey and accessSecret are authentication parts for the remote file system.
-func New(projectID string) *watchOptions {
-	return &watchOptions{
+func New(projectID string) *secretOptions {
+	return &secretOptions{
 		projectID:     projectID,
 		accessSecrets: &googleSecretsManagerWrapper{},
 	}
@@ -35,7 +42,7 @@ type accessSecrets interface {
 	getGoogleSecretManagerSecret(secretID, projectID string) ([]byte, error)
 }
 
-func (o watchOptions) populateSecret(secret v1.Secret, projectID string) (v1.Secret, bool, error) {
+func (o secretOptions) populateSecret(secret v1.Secret, projectID string) (v1.Secret, bool, error) {
 	if secret.Annotations[annotationGSMsecretID] == "" {
 		return secret, false, nil
 	}
