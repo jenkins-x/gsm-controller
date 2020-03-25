@@ -27,7 +27,7 @@ type ListOptions struct {
 }
 
 var (
-	list_long = "List kubernetes secrets and update their data values from Google Secret Manager"
+	list_desc = "List kubernetes secrets and update their data values from Google Secret Manager"
 
 	list_example = "gsm list --project-id my-cool-gcp-project"
 )
@@ -38,7 +38,8 @@ func NewCmdList() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:     "list",
-		Long:    list_long,
+		Short:   list_desc,
+		Long:    list_desc,
 		Example: list_example,
 		Run: func(cmd *cobra.Command, args []string) {
 			options.Cmd = cmd
@@ -46,7 +47,7 @@ func NewCmdList() *cobra.Command {
 			err := options.Run()
 			shared.CheckErr(err)
 		},
-		SuggestFor: []string{"watch"},
+		SuggestFor: []string{"list"},
 	}
 
 	cmd.Flags().StringVarP(&options.projectID, "project-id", "", "", "The Google Project ID that contains the Google Secret Manager service")

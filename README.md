@@ -87,15 +87,25 @@ use gcloud to verify you can auth, it make take a few tries over a few minutes
 gcloud auth list
 ```
 
-install the gsm controller chart
+add the labs repo or update it to get the latest charts
 ```bash
 helm plugin install https://github.com/hayorov/helm-gcs
 helm repo add jx-labs https://jenkinsxio-labs.storage.googleapis.com/charts
+```
 # or
+```bash
 helm repo update
+```
+install the gsm controller chart
+```bash
+helm install --set deployment.enabled=true --set projectID=$SECRETS_MANAGER_PROJECT_ID gsm-controller jx-labs/gsm-controller
+```
 
-helm install --set projectID=$SECRETS_MANAGER_PROJECT_ID gsm-controller jx-labs/gsm-controller
+or to run it as a Kubernetes CronJob which has the advantage of reguarly checking the Google Secret Manager store and
+updating cluster secrets if there are new values.
 
+```bash
+helm install --set cron.enabled=true --set projectID=$SECRETS_MANAGER_PROJECT_ID gsm jx-labs/gsm-controller
 ```
 
 ### Annotate secrets

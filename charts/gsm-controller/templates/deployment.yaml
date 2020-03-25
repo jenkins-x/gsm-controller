@@ -1,3 +1,4 @@
+{{- if .Values.deployment.enabled -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -25,9 +26,11 @@ spec:
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         command:
-        - "gsm-controller"
+        - "gsm"
         args:
-        - "{{ .Values.projectID }}"
+          - watch
+          - --project-id
+          - "{{ .Values.projectID }}"
         env:
 {{- range $pkey, $pval := .Values.env }}
         - name: {{ $pkey }}
@@ -39,4 +42,4 @@ spec:
 {{ toYaml .Values.resources | indent 12 }}
       terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
       serviceAccountName: gsm-sa
-
+{{- end -}}

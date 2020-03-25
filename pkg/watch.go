@@ -33,7 +33,7 @@ type WatchOptions struct {
 }
 
 var (
-	watch_long = "Watch kubernetes secrets and update their data values from Google Secret Manager"
+	watch_desc = "Watch kubernetes secrets and update their data values from Google Secret Manager"
 
 	watch_example = "gsm watch --project-id my-cool-gcp-project"
 )
@@ -44,7 +44,8 @@ func NewCmdWatch() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:     "watch",
-		Long:    watch_long,
+		Long:    watch_desc,
+		Short:   watch_desc,
 		Example: watch_example,
 		Run: func(cmd *cobra.Command, args []string) {
 			options.Cmd = cmd

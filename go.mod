@@ -7,6 +7,7 @@ require (
 	github.com/cloudflare/cfssl v0.0.0-20190409034051-768cd563887f
 	github.com/docker/spdystream v0.0.0-20160310174837-449fdfce4d96 // indirect
 	github.com/evanphx/json-patch v4.2.0+incompatible // indirect
+	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
 	github.com/google/uuid v1.1.1 // indirect
 	github.com/googleapis/gnostic v0.4.1 // indirect
 	github.com/gophercloud/gophercloud v0.1.0 // indirect
