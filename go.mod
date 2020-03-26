@@ -13,6 +13,7 @@ require (
 	github.com/gophercloud/gophercloud v0.1.0 // indirect
 	github.com/gregjones/httpcache v0.0.0-20180305231024-9cad4c3443a7 // indirect
 	github.com/imdario/mergo v0.3.9 // indirect
+	github.com/jenkins-x/jx-logging v0.0.1
 	github.com/magiconair/properties v1.8.1
 	github.com/mxk/go-flowrate v0.0.0-20140419014527-cca7078d478f // indirect
 	github.com/onsi/ginkgo v1.10.1 // indirect
@@ -28,7 +29,6 @@ require (
 	k8s.io/apimachinery v0.0.0-20191004074956-c5d2f014d689
 	k8s.io/client-go v11.0.1-0.20191004102930-01520b8320fc+incompatible
 	k8s.io/code-generator v0.17.3 // indirect
-	k8s.io/klog v1.0.0
 	k8s.io/utils v0.0.0-20200229041039-0a110f9eb7ab // indirect
 )
 

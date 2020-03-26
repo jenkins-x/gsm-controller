@@ -7,9 +7,9 @@ import (
 
 	secretmanager "cloud.google.com/go/secretmanager/apiv1beta1"
 
-	"k8s.io/klog"
-
 	"github.com/jenkins-x-labs/gsm-controller/pkg/shared"
+
+	"github.com/jenkins-x/jx-logging/pkg/log"
 
 	"github.com/pkg/errors"
 
@@ -124,7 +124,7 @@ func (opts secretOptions) onAdd(obj interface{}) {
 	derefrencedSecret := *secret
 	err := opts.findSecretData(derefrencedSecret)
 	if err != nil {
-		klog.Error(err)
+		log.Logger().Error(err)
 	}
 }
 
@@ -136,7 +136,7 @@ func (opts secretOptions) onUpdate(oldObj interface{}, newObj interface{}) {
 		derefrencedSecret := *newSecret
 		err := opts.findSecretData(derefrencedSecret)
 		if err != nil {
-			klog.Error(err)
+			log.Logger().Error(err)
 		}
 	}
 }
@@ -151,7 +151,7 @@ func (opts secretOptions) findSecretData(secret v1.Secret) error {
 		if err != nil {
 			return errors.Wrapf(err, "failed to update secret %s", secret.Name)
 		}
-		klog.Infof("updated secret %s", secret.Name)
+		log.Logger().Infof("updated secret %s", secret.Name)
 	}
 	return nil
 }
