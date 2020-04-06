@@ -96,16 +96,10 @@ helm repo add jx-labs https://jenkinsxio-labs.storage.googleapis.com/charts
 ```bash
 helm repo update
 ```
-install the gsm controller chart
-```bash
-helm install --set deployment.enabled=true --set projectID=$SECRETS_MANAGER_PROJECT_ID gsm-controller jx-labs/gsm-controller
-```
-
-or to run it as a Kubernetes CronJob which has the advantage of reguarly checking the Google Secret Manager store and
-updating cluster secrets if there are new values.
+install the helm chart, this includes a kubernetes controller that always runs and watches for new or updated secrets.  We also install a kubernetes CronJon that periodically triggers and checks for updated secret versions in Google Secret Manager.
 
 ```bash
-helm install --set cron.enabled=true --set projectID=$SECRETS_MANAGER_PROJECT_ID gsm jx-labs/gsm-controller
+helm install --set projectID=$SECRETS_MANAGER_PROJECT_ID gsm-controller jx-labs/gsm-controller
 ```
 
 ### Annotate secrets

@@ -39,8 +39,8 @@ jxRequirements:
     #  kubernetes.io/ingress.class: nginx
 
 deployment:
-  enabled: false
+  enabled: true
 
 cron:
-  enabled: false
+  enabled: true
   schedule: "*/5 * * * *"
