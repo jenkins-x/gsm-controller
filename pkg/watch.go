@@ -27,9 +27,10 @@ import (
 
 // UpgradeOptions are the flags for delete commands
 type WatchOptions struct {
-	Cmd       *cobra.Command
-	Args      []string
-	projectID string
+	Cmd           *cobra.Command
+	Args          []string
+	projectID     string
+	allNamespaces bool
 }
 
 var (
@@ -57,7 +58,7 @@ func NewCmdWatch() *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&options.projectID, "project-id", "", "", "The Google Project ID that contains the Google Secret Manager service")
-
+	cmd.Flags().BoolVarP(&options.allNamespaces, "all-namespaces", "", false, "Scan all namespaces")
 	return cmd
 }
 
@@ -95,6 +96,10 @@ func (o *WatchOptions) Run() error {
 	}
 
 	namespace := shared.CurrentNamespace()
+	if o.allNamespaces {
+		namespace = v1.NamespaceAll
+	}
+
 	factory := informers.NewSharedInformerFactoryWithOptions(secretOptions.kubeclient, 0, informers.WithNamespace(namespace))
 
 	informer := factory.Core().V1().Secrets().Informer()

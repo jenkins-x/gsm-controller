@@ -5,6 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	secretmanager "cloud.google.com/go/secretmanager/apiv1beta1"
@@ -21,9 +22,10 @@ import (
 
 // ListOptions are the flags for list commands
 type ListOptions struct {
-	Cmd       *cobra.Command
-	Args      []string
-	projectID string
+	Cmd           *cobra.Command
+	Args          []string
+	projectID     string
+	allNamespaces bool
 }
 
 var (
@@ -51,6 +53,7 @@ func NewCmdList() *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&options.projectID, "project-id", "", "", "The Google Project ID that contains the Google Secret Manager service")
+	cmd.Flags().BoolVarP(&options.allNamespaces, "all-namespaces", "", false, "Scan all namespaces")
 
 	return cmd
 }
@@ -88,6 +91,9 @@ func (o ListOptions) Run() error {
 	}
 
 	namespace := shared.CurrentNamespace()
+	if o.allNamespaces {
+		namespace = v1.NamespaceAll
+	}
 
 	secretsList, err := secretOptions.kubeclient.CoreV1().Secrets(namespace).List(metav1.ListOptions{})
 	if err != nil {
