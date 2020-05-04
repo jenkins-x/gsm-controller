@@ -1,6 +1,7 @@
 package pkg
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -10,6 +11,8 @@ import (
 	secretmanagerpb "google.golang.org/genproto/googleapis/cloud/secretmanager/v1beta1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
+
+	"github.com/joho/godotenv"
 )
 
 type secretOptions struct {
@@ -22,6 +25,11 @@ const (
 	annotationGSMsecretID            = "jenkins-x.io/gsm-secret-id"
 	annotationGSMKubernetesSecretKey = "jenkins-x.io/gsm-kubernetes-secret-key"
 	annotationGSMSecretType          = "jenkins-x.io/gsm-type"
+)
+
+const (
+	secretJsonType   = "json"
+	secretDotenvType = "dotenv"
 )
 
 // New creates a instatialized Getter that can get files locally or remotely.
@@ -62,7 +70,7 @@ func (o secretOptions) populateSecret(secret v1.Secret, projectID string) (v1.Se
 	}
 
 	// Treat as JSON value and save all keys into k8s secret
-	if secret.Annotations[annotationGSMSecretType] == "json" {
+	if secret.Annotations[annotationGSMSecretType] == secretJsonType {
 		var secretMap map[string]interface{}
 		err := json.Unmarshal([]byte(secretValue), &secretMap)
 		if err != nil {
@@ -72,6 +80,18 @@ func (o secretOptions) populateSecret(secret v1.Secret, projectID string) (v1.Se
 		for key, value := range secretMap {
 			secret.Data[key] = []byte(value.(string))
 		}
+
+	} else if secret.Annotations[annotationGSMSecretType] == secretDotenvType {
+		r := bytes.NewReader(secretValue)
+		secretMap, err := godotenv.Parse(r)
+
+		if err != nil {
+			return secret, false, fmt.Errorf("failed to decode dotenv %s in Google Secrets Manager", secretID)
+		}
+		for key, value := range secretMap {
+			secret.Data[key] = []byte(value)
+		}
+
 	} else if secret.Annotations[annotationGSMKubernetesSecretKey] != "" {
 		secret.Data[secret.Annotations[annotationGSMKubernetesSecretKey]] = secretValue
 	} else {

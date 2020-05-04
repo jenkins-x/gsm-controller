@@ -14,6 +14,7 @@ require (
 	github.com/gregjones/httpcache v0.0.0-20180305231024-9cad4c3443a7 // indirect
 	github.com/imdario/mergo v0.3.9 // indirect
 	github.com/jenkins-x/jx-logging v0.0.1
+	github.com/joho/godotenv v1.3.0
 	github.com/magiconair/properties v1.8.1
 	github.com/mxk/go-flowrate v0.0.0-20140419014527-cca7078d478f // indirect
 	github.com/onsi/ginkgo v1.10.1 // indirect
