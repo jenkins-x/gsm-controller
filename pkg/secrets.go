@@ -2,6 +2,7 @@ package pkg
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	secretmanager "cloud.google.com/go/secretmanager/apiv1beta1"
@@ -20,6 +21,7 @@ type secretOptions struct {
 const (
 	annotationGSMsecretID            = "jenkins-x.io/gsm-secret-id"
 	annotationGSMKubernetesSecretKey = "jenkins-x.io/gsm-kubernetes-secret-key"
+	annotationGSMSecretType          = "jenkins-x.io/gsm-type"
 )
 
 // New creates a instatialized Getter that can get files locally or remotely.
@@ -59,7 +61,18 @@ func (o secretOptions) populateSecret(secret v1.Secret, projectID string) (v1.Se
 		secret.Data = make(map[string][]byte)
 	}
 
-	if secret.Annotations[annotationGSMKubernetesSecretKey] != "" {
+	// Treat as JSON value and save all keys into k8s secret
+	if secret.Annotations[annotationGSMSecretType] == "json" {
+		var secretMap map[string]interface{}
+		err := json.Unmarshal([]byte(secretValue), &secretMap)
+		if err != nil {
+			return secret, false, fmt.Errorf("failed to decode JSON secret id %s in Google Secrets Manager", secretID)
+		}
+
+		for key, value := range secretMap {
+			secret.Data[key] = []byte(value.(string))
+		}
+	} else if secret.Annotations[annotationGSMKubernetesSecretKey] != "" {
 		secret.Data[secret.Annotations[annotationGSMKubernetesSecretKey]] = secretValue
 	} else {
 		// default to the gsm secret id
