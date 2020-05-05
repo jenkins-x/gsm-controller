@@ -5,7 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	secretmanager "cloud.google.com/go/secretmanager/apiv1beta1"
+	secretmanager "cloud.google.com/go/secretmanager/apiv1"
 
 	"github.com/jenkins-x-labs/gsm-controller/pkg/shared"
 
