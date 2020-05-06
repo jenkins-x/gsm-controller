@@ -3,7 +3,7 @@ module github.com/jenkins-x-labs/gsm-controller
 go 1.12
 
 require (
-	cloud.google.com/go v0.56.0
+	cloud.google.com/go v0.57.0
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
 	github.com/golang/protobuf v1.4.1 // indirect
 	github.com/googleapis/gnostic v0.4.1 // indirect
@@ -22,9 +22,7 @@ require (
 	golang.org/x/sys v0.0.0-20200501145240-bc7a7d42d5c3 // indirect
 	golang.org/x/time v0.0.0-20200416051211-89c76fbcd5d1 // indirect
 	google.golang.org/api v0.23.0 // indirect
-	google.golang.org/appengine v1.6.6 // indirect
 	google.golang.org/genproto v0.0.0-20200430143042-b979b6f78d84
-	google.golang.org/grpc v1.29.1 // indirect
 	k8s.io/api v0.16.9
 	k8s.io/apimachinery v0.16.10-beta.0
 	k8s.io/client-go v0.16.9
