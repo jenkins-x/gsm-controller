@@ -6,6 +6,14 @@
 [![LICENSE](https://img.shields.io/github/license/jenkins-x-labs/gsm-controller.svg)](https://github.com/jenkins-x-labs/gsm-controller/blob/master/LICENSE)
 [![Slack Status](https://img.shields.io/badge/slack-join_chat-white.svg?logo=slack&style=social)](https://slack.k8s.io/)
 
+This is a fork of [jenkins-x-labs/gsm-controller](https://github.com/jenkins-x-labs/gsm-controller) which has the following changes:
+
+- JSON/dotenv format support for mapping multiple secrets items [#12](https://github.com/jenkins-x-labs/gsm-controller/pull/12)
+- Cluster wide support
+- Distroless base image
+- Use GA v1 secretsmanager API over v1beta1
+- Use Kubernetes client-go v1.16.9
+
 # Overview
 
 gsm-controller is a Kubernetes controller that copies secrets from Google Secrets Manager into Kubernetes secrets.  The controller
@@ -110,7 +118,7 @@ with above.
 kubectl create secret generic my-secret
 kubectl annotate secret my-secret jenkins-x.io/gsm-kubernetes-secret-key=credentials.json
 kubectl annotate secret my-secret jenkins-x.io/gsm-secret-id=foo
-```  
+```
 After a short wait you should be able to see the base64 encoded data in the secret
 ```bash
 kubectl get secret my-secret -oyaml
