@@ -87,10 +87,10 @@ use gcloud to verify you can auth, it make take a few tries over a few minutes
 gcloud auth list
 ```
 
-add the labs repo or update it to get the latest charts
+add the helm repo or update it to get the latest charts
 ```bash
 helm plugin install https://github.com/hayorov/helm-gcs
-helm repo add jx-labs https://jenkinsxio-labs.storage.googleapis.com/charts
+helm repo add jx3 https://storage.googleapis.com/jenkinsxio/charts
 ```
 # or
 ```bash
@@ -99,7 +99,7 @@ helm repo update
 install the helm chart, this includes a kubernetes controller that always runs and watches for new or updated secrets.  We also install a kubernetes CronJon that periodically triggers and checks for updated secret versions in Google Secret Manager.
 
 ```bash
-helm install --set projectID=$SECRETS_MANAGER_PROJECT_ID gsm-controller jx-labs/gsm-controller
+helm install --set projectID=$SECRETS_MANAGER_PROJECT_ID gsm-controller jx3/gsm-controller
 ```
 
 ### Annotate secrets
