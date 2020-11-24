@@ -1,4 +1,4 @@
-CHART_REPO := gs://jenkinsxio-labs/charts
+CHART_REPO := gs://jenkinsxio/charts
 NAME := gsm-controller
 
 build: clean
