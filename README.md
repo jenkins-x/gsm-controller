@@ -87,10 +87,12 @@ use gcloud to verify you can auth, it make take a few tries over a few minutes
 gcloud auth list
 ```
 
+# Install
+
 add the helm repo or update it to get the latest charts
 ```bash
 helm plugin install https://github.com/hayorov/helm-gcs
-helm repo add jx3 https://storage.googleapis.com/jenkinsxio/charts
+helm repo add jx3 https://jenkins-x-charts.github.io/repo
 ```
 # or
 ```bash
