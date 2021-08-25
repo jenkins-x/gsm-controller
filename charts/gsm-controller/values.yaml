@@ -20,6 +20,10 @@ resources:
     cpu: 80m
     memory: 128Mi
 
+jx:
+  # whether to create a Release CRD when installing charts with Release CRDs included
+  releaseCRD: false
+
 # values we use from the `jx-requirements.yml` file if we are using helmfile and helm 3
 jxRequirements:
   ingress:
