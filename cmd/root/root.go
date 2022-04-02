@@ -29,5 +29,6 @@ func init() {
 
 	rootCmd.AddCommand(pkg.NewCmdWatch())
 	rootCmd.AddCommand(pkg.NewCmdList())
+	rootCmd.AddCommand(pkg.NewCmdSubscribe())
 
 }
