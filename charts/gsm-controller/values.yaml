@@ -1,5 +1,7 @@
 projectID:
 
+allNamespaces: false
+
 # Default values for Go projects.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
@@ -44,6 +46,10 @@ jxRequirements:
 
 deployment:
   enabled: true
+  pubsub:
+    enabled: false
+    # GCP Pub/Sub Subscription Name
+    subscription: ""
 
 cron:
   enabled: true

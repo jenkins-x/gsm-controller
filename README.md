@@ -98,7 +98,7 @@ helm repo add jx3 https://jenkins-x-charts.github.io/repo
 ```bash
 helm repo update
 ```
-install the helm chart, this includes a kubernetes controller that always runs and watches for new or updated secrets.  We also install a kubernetes CronJon that periodically triggers and checks for updated secret versions in Google Secret Manager.
+install the helm chart, this includes a kubernetes controller that always runs and watches for new or updated secrets.  We also install a kubernetes CronJob that periodically triggers and checks for updated secret versions in Google Secret Manager.
 
 ```bash
 helm install --set projectID=$SECRETS_MANAGER_PROJECT_ID gsm-controller jx3/gsm-controller
@@ -143,6 +143,60 @@ export GOOGLE_APPLICATION_CREDENTIALS=~/.secret/key.json
 make build
 ./build/gsm-controller my-cool-project
 ```
+
+# Realtime Updates
+
+gsm-controller supports following Google Secret Manager's [event notifications](https://cloud.google.com/secret-manager/docs/event-notifications).
+
+## Pubsub Access
+
+```bash
+gcloud beta services identity create \
+    --service "secretmanager.googleapis.com" \
+    --project $SECRETS_MANAGER_PROJECT_ID
+
+# ^ This will print out a service account which can be constructed as follows ˅
+
+PROJECT_NUMBER=gcloud projects describe $SECRETS_MANAGER_PROJECT_ID --format='value(projectNumber)'
+export SM_SERVICE_ACCOUNT=service-${PROJECT_NUMBER}@gcp-sa-secretmanager.iam.gserviceaccount.com
+
+
+gcloud pubsub topics create "projects/${SECRETS_MANAGER_PROJECT_ID}/topics/secrets.events"
+
+gcloud pubsub topics add-iam-policy-binding secrets.events \
+    --member "serviceAccount:${SM_SERVICE_ACCOUNT}" \
+    --role "roles/pubsub.publisher" \
+    --project $SECRETS_MANAGER_PROJECT_ID
+```
+
+Create a subscription for the Kubernetes cluster.
+```bash
+gcloud pubsub subscriptions create \
+    "projects/${SECRETS_MANAGER_PROJECT_ID}/subscriptions/secrets.events.$CLUSTER_NAME.gsm-pubsub" \
+    --topic "projects/${SECRETS_MANAGER_PROJECT_ID}/topics/secrets.events"
+```
+
+Allow reading the subscription
+```bash
+gcloud pubsub subscriptions add-iam-policy-binding secrets.events.$CLUSTER_NAME.gsm-pubsub \
+    --member "serviceAccount:$CLUSTER_NAME-sm@$SECRETS_MANAGER_PROJECT_ID.iam.gserviceaccount.com" \
+    --role "roles/pubsub.subscriber" \
+    --project $SECRETS_MANAGER_PROJECT_ID
+```
+
+## Install with Pubsub
+
+When following the [install instructions](#install), also set the `deployment.pubsub` values.
+```bash
+helm install \
+  --set projectID=$SECRETS_MANAGER_PROJECT_ID \
+  --set deployment.pubsub.enabled=true \
+  --set deployment.pubsub.subscription=secrets.events.$CLUSTER_NAME.gsm-pubsub \
+  --set cron.schedule="23 */2 * * *" \
+  gsm-controller jx3/gsm-controller
+```
+
+The cron schedule of `"23 */2 * * *"` means the cronjob will run every 2 hours rather than every 5 minutes.
 
 # Video
 
