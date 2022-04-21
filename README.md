@@ -184,6 +184,15 @@ gcloud pubsub subscriptions add-iam-policy-binding secrets.events.$CLUSTER_NAME.
     --project $SECRETS_MANAGER_PROJECT_ID
 ```
 
+### Creating Secrets
+When creating secrets, make sure to specify the topic
+```bash
+gcloud beta secrets create foo --replication-policy automatic \
+    --project $SECRETS_MANAGER_PROJECT_ID --data-file=-=my_secrets.yaml \
+    --topics "projects/${SECRETS_MANAGER_PROJECT_ID}/topics/secrets.events"
+```
+
+
 ## Install with Pubsub
 
 When following the [install instructions](#install), also set the `deployment.pubsub` values.
