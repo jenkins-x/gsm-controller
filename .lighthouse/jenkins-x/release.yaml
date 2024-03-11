@@ -24,8 +24,6 @@ spec:
           resources: {}
         - name: jx-variables
           resources: {}
-        - name: release-binary
-          resources: {}
         - name: build-and-push-image
           resources: {}
         - name: chart-docs
