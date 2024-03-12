@@ -1,19 +1,15 @@
 projectID:
-
 allNamespaces: false
-
 # Default values for Go projects.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 replicaCount: 1
 image:
-  repository: draft
-  tag: dev
+  repository: ghcr.io/jenkins-x/gsm-controller
+  tag: 0.1.0
   pullPolicy: IfNotPresent
-
 # define environment variables here as a map of key: value
 env:
-
 resources:
   limits:
     cpu: 100m
@@ -21,11 +17,9 @@ resources:
   requests:
     cpu: 80m
     memory: 128Mi
-
 jx:
   # whether to create a Release CRD when installing charts with Release CRDs included
   releaseCRD: false
-
 # values we use from the `jx-requirements.yml` file if we are using helmfile and helm 3
 jxRequirements:
   ingress:
@@ -36,21 +30,17 @@ jxRequirements:
       email: ""
       enabled: false
       production: false
-
     # For Kubernetes v1.14+, use 'networking.k8s.io/v1beta1'
     apiVersion: "extensions/v1beta1"
-
     # shared ingress annotations on all services
     annotations:
     #  kubernetes.io/ingress.class: nginx
-
 deployment:
   enabled: true
   pubsub:
     enabled: false
     # GCP Pub/Sub Subscription Name
     subscription: ""
-
 cron:
   enabled: true
   schedule: "*/5 * * * *"
