@@ -17,6 +17,7 @@ import (
 
 type secretOptions struct {
 	kubeclient    kubernetes.Interface
+	namespace     string
 	projectID     string
 	accessSecrets accessSecrets
 }
@@ -72,7 +73,7 @@ func (o secretOptions) populateSecret(secret v1.Secret, projectID string) (v1.Se
 	// Treat as JSON value and save all keys into k8s secret
 	if secret.Annotations[annotationGSMSecretType] == secretJsonType {
 		var secretMap map[string]interface{}
-		err := json.Unmarshal([]byte(secretValue), &secretMap)
+		err := json.Unmarshal(secretValue, &secretMap)
 		if err != nil {
 			return secret, false, fmt.Errorf("failed to decode JSON secret id %s in Google Secrets Manager", secretID)
 		}

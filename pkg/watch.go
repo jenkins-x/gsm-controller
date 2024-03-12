@@ -25,7 +25,7 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 )
 
-// UpgradeOptions are the flags for delete commands
+// WatchOptions are the flags for watch commands
 type WatchOptions struct {
 	Cmd           *cobra.Command
 	Args          []string

@@ -17,6 +17,9 @@ spec:
               - "gsm"
             args:
               - list
+{{- if .Values.allNamespaces }}
+              - --all-namespaces
+{{- end }}
               - --project-id
               - "{{ .Values.projectID }}"
           restartPolicy: Never

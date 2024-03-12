@@ -29,6 +29,9 @@ spec:
         - "gsm"
         args:
           - watch
+{{- if .Values.allNamespaces }}
+          - --all-namespaces
+{{- end }}
           - --project-id
           - "{{ .Values.projectID }}"
         env:
@@ -40,6 +43,31 @@ spec:
 {{ toYaml .Values.envFrom | indent 10 }}
         resources:
 {{ toYaml .Values.resources | indent 12 }}
+{{- if .Values.deployment.pubsub.enabled }}
+      - name: gsm-subscribe
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        command:
+        - "gsm"
+        args:
+          - subscribe
+{{- if .Values.allNamespaces }}
+          - --all-namespaces
+{{- end }}
+          - --project-id
+          - "{{ .Values.projectID }}"
+          - --subscription
+          - "{{ .Values.deployment.pubsub.subscription }}"
+        env:
+{{- range $pkey, $pval := .Values.env }}
+        - name: {{ $pkey }}
+          value: {{ quote $pval }}
+{{- end }}
+        envFrom:
+{{ toYaml .Values.envFrom | indent 10 }}
+        resources:
+{{ toYaml .Values.resources | indent 12 }}
+{{- end }}
       terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
       serviceAccountName: gsm-sa
 {{- end -}}
